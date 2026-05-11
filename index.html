@@ -3,170 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리 가족 인생 그래프</title>
+    <title>우리가족 인생 연대기</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --main-color: #ff922b; --bg-color: #f8faff; }
-        body { font-family: 'Nanum Gothic', sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        :root { --primary: #ff922b; --bg: #f8f9fa; }
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #e9ecef; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
-        /* 메인 컨테이너 */
-        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 800px; text-align: center; }
+        /* 전체 박스 */
+        .main-card { background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 900px; }
         
-        header h1 { color: #333; margin-bottom: 5px; }
-        header p { color: #666; margin-bottom: 20px; }
+        /* 입력 섹션 */
+        .input-box { background: #fff4e6; padding: 20px; border-radius: 15px; margin-bottom: 25px; border: 2px solid #ffe8cc; }
+        .input-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 15px; }
+        
+        input, select { padding: 12px; border-radius: 8px; border: 1px solid #dee2e6; font-size: 15px; }
+        .name-input { width: 250px; text-align: center; font-size: 18px; font-weight: bold; border: 2px solid var(--primary); }
+        .year-input { width: 120px; }
+        .event-input { width: 300px; }
+        
+        .btn-add { background: #4dabf7; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-add:hover { background: #339af0; }
 
-        /* 입력 영역 */
-        .input-section { background: #fff9db; padding: 20px; border-radius: 15px; margin-bottom: 20px; }
-        .input-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
-        input, select { padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px; }
-        .btn-add { background-color: #4dabf7; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-add:hover { background-color: #339af0; }
+        /* 저장되는 영역 (캡쳐 대상) */
+        #save-zone { background: white; padding: 30px; border-radius: 20px; text-align: center; }
+        #title-display { font-size: 32px; font-weight: bold; color: #343a40; margin-bottom: 20px; display: inline-block; border-bottom: 4px solid var(--primary); }
+        
+        /* 그래프 크기 조절 */
+        .chart-wrapper { position: relative; height: 400px; width: 100%; margin-bottom: 20px; }
 
-        /* 저장될 영역 (캡쳐 대상) */
-        #capture-area { background: white; padding: 20px; border-radius: 15px; }
-        #display-name { font-size: 24px; font-weight: bold; margin: 20px 0; color: #333; border-bottom: 2px solid var(--main-color); display: inline-block; padding-bottom: 5px; }
-        
-        /* 리스트 영역 */
-        .event-list { margin-top: 20px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto; }
-        .event-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
-        .event-info { display: flex; gap: 15px; }
-        .event-year { font-weight: bold; color: var(--main-color); width: 60px; }
-        
-        /* 저장 버튼 */
-        .btn-save { background-color: #51cf66; color: white; border: none; padding: 15px 30px; border-radius: 30px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 30px; box-shadow: 0 4px 15px rgba(81, 207, 102, 0.3); }
-        .btn-save:hover { background-color: #40c057; transform: translateY(-2px); }
+        /* 연표 리스트 */
+        .history-list { text-align: left; margin-top: 30px; border-top: 2px solid #f1f3f5; padding-top: 20px; }
+        .history-item { display: flex; padding: 10px; border-bottom: 1px solid #f1f3f5; font-size: 16px; }
+        .h-year { font-weight: bold; color: var(--primary); width: 100px; }
+        .h-event { flex: 1; }
+
+        /* 사진 저장 버튼 */
+        .btn-download { background: #51cf66; color: white; border: none; padding: 18px 40px; border-radius: 50px; cursor: pointer; font-size: 20px; font-weight: bold; margin-top: 30px; box-shadow: 0 5px 15px rgba(81,207,102,0.4); }
+        .btn-download:hover { background: #40c057; transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>🌟 우리 가족 인생 그래프</h1>
-        <p>가족의 소중한 순간들을 기록해 보세요.</p>
-    </header>
-
-    <div class="input-section">
-        <input type="text" id="user-name" placeholder="누구의 그래프인가요?" style="width: 200px; text-align: center; font-weight: bold;">
-        <div class="input-group">
-            <input type="number" id="year" placeholder="연도 (숫자)" style="width: 100px;">
-            <input type="text" id="event" placeholder="어떤 일이 있었나요?" style="width: 250px;">
+<div class="main-card">
+    <div class="input-box">
+        <div style="text-align: center; margin-bottom: 10px;">
+            <strong>학생 이름:</strong> 
+            <input type="text" id="student-name" class="name-input" placeholder="이름을 입력하세요" oninput="updateTitle()">
+        </div>
+        <div class="input-row">
+            <input type="number" id="year" class="year-input" placeholder="연도 (20XX)">
+            <input type="text" id="event" class="event-input" placeholder="사건 (예: 초등학교 입학)">
             <select id="score">
-                <option value="100">최고!(100)</option>
-                <option value="80">좋아요(80)</option>
+                <option value="100">최고(100)</option>
+                <option value="80">좋음(80)</option>
                 <option value="50">보통(50)</option>
-                <option value="20">슬퍼요(20)</option>
+                <option value="20">슬픔(20)</option>
             </select>
-            <button class="btn-add" onclick="addData()">기록 추가</button>
+            <button class="btn-add" onclick="addItem()">내용 추가</button>
         </div>
     </div>
 
-    <div id="capture-area">
-        <div id="display-name">이름을 입력해주세요</div>
-        <canvas id="familyChart"></canvas>
-        <div class="event-list" id="event-list">
-            </div>
+    <div id="save-zone">
+        <div id="title-display">우리 가족 인생 그래프</div>
+        <div class="chart-wrapper">
+            <canvas id="myChart"></canvas>
+        </div>
+        <div id="history-box" class="history-list">
+            <p style="color: #adb5bd; text-align: center;">내용을 입력하면 연표가 자동으로 정리됩니다.</p>
+        </div>
     </div>
 
-    <button class="btn-save" onclick="downloadImage()">📸 사진으로 저장하여 제출하기</button>
+    <div style="text-align: center;">
+        <button class="btn-download" onclick="takePhoto()">📸 사진으로 저장하여 제출하기</button>
+    </div>
 </div>
 
 <script>
-    const ctx = document.getElementById('familyChart').getContext('2d');
-    let lifeData = []; // 데이터를 담을 배열
+    // 1. 데이터 저장 저장소
+    let items = []; 
+    const ctx = document.getElementById('myChart').getContext('2d');
 
-    // 차트 초기 설정
-    const chart = new Chart(ctx, {
+    // 2. 차트 초기화
+    let myChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: [],
             datasets: [{
-                label: '행복 지수',
+                label: '행복 점수',
                 data: [],
                 borderColor: '#ff922b',
                 backgroundColor: 'rgba(255, 146, 43, 0.1)',
+                borderWidth: 4,
                 fill: true,
                 tension: 0.3,
-                pointRadius: 6,
+                pointRadius: 8,
                 pointBackgroundColor: '#ff922b'
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
-                y: { min: 0, max: 100, ticks: { stepSize: 20 } }
-            },
-            plugins: {
-                legend: { display: false }
+                y: { min: 0, max: 100 }
             }
         }
     });
 
-    function addData() {
-        const nameInput = document.getElementById('user-name').value;
+    // 3. 이름 입력 시 실시간 타이틀 변경
+    function updateTitle() {
+        const name = document.getElementById('student-name').value;
+        document.getElementById('title-display').innerText = name ? name + "의 인생 그래프" : "우리 가족 인생 그래프";
+    }
+
+    // 4. 데이터 추가 및 자동 정렬 함수
+    function addItem() {
         const year = document.getElementById('year').value;
         const event = document.getElementById('event').value;
         const score = document.getElementById('score').value;
 
-        if(!year || !event) {
-            alert("연도와 내용을 모두 입력해주세요!");
+        if (!year || !event) {
+            alert("연도와 사건 내용을 입력해주세요!");
             return;
         }
 
-        // 이름 표시 업데이트
-        if(nameInput) {
-            document.getElementById('display-name').innerText = nameInput + "의 인생 그래프";
-        }
-
-        // 1. 데이터 배열에 추가
-        lifeData.push({
+        // 데이터 추가
+        items.push({
             year: parseInt(year),
             event: event,
             score: parseInt(score)
         });
 
-        // 2. 연도순으로 정렬 (핵심 기능)
-        lifeData.sort((a, b) => a.year - b.year);
+        // [중요] 연도순으로 정렬 (2010, 2024 등 입력순서 상관없음)
+        items.sort((a, b) => a.year - b.year);
 
-        // 3. 차트 및 리스트 업데이트
-        updateUI();
+        // UI 업데이트
+        refreshUI();
 
-        // 입력창 비우기 (이름은 유지)
+        // 입력창 비우기
         document.getElementById('year').value = '';
         document.getElementById('event').value = '';
     }
 
-    function updateUI() {
-        // 차트 데이터 갱신
-        chart.data.labels = lifeData.map(d => d.year + "년");
-        chart.data.datasets[0].data = lifeData.map(d => d.score);
-        chart.update();
+    // 5. 화면 갱신 함수 (차트 + 연표)
+    function refreshUI() {
+        // 차트 업데이트
+        myChart.data.labels = items.map(i => i.year + "년");
+        myChart.data.datasets[0].data = items.map(i => i.score);
+        myChart.update();
 
-        // 하단 리스트 갱신
-        const listDiv = document.getElementById('event-list');
-        listDiv.innerHTML = '<h3 style="font-size:16px; color:#666;">[인생 연표]</h3>';
+        // 연표 리스트 업데이트
+        const historyBox = document.getElementById('history-box');
+        historyBox.innerHTML = '<h3>[가족 연표]</h3>';
         
-        lifeData.forEach(d => {
-            const item = document.createElement('div');
-            item.className = 'event-item';
-            item.innerHTML = `
-                <div class="event-info">
-                    <span class="event-year">${d.year}년</span>
-                    <span class="event-text">${d.event}</span>
-                </div>
-                <span class="event-score">점수: ${d.score}</span>
-            `;
-            listDiv.appendChild(item);
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `<span class="h-year">${item.year}년</span><span class="h-event">${item.event}</span><span>점수: ${item.score}</span>`;
+            historyBox.appendChild(div);
         });
     }
 
-    // 사진 저장 기능
-    function downloadImage() {
-        const captureArea = document.getElementById('capture-area');
-        const name = document.getElementById('user-name').value || "가족";
-        
-        html2canvas(captureArea).then(canvas => {
+    // 6. 이미지 저장 (캡쳐) 함수
+    function takePhoto() {
+        const name = document.getElementById('student-name').value || "가족";
+        const target = document.getElementById('save-zone');
+
+        html2canvas(target).then(canvas => {
             const link = document.createElement('a');
-            link.download = name + '_인생그래프.png';
+            link.download = name + '_인생연대기.png';
             link.href = canvas.toDataURL();
             link.click();
         });
