@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>우리가족 연대기 그래프</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Nanum Gothic', sans-serif; background-color: #f8faff; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 600px; text-align: center; }
+        .input-group { margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        input, select, button { padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
+        button { background-color: #4dabf7; color: white; border: none; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #339af0; }
+        canvas { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>👨‍👩‍👧‍👦 우리 가족 연대기</h2>
+    <div class="input-group">
+        <input type="text" id="year" placeholder="시기 (예: 2024년)" style="width: 100px;">
+        <input type="text" id="event" placeholder="무슨 일이 있었나요?">
+        <select id="score">
+            <option value="100">최고!(100)</option>
+            <option value="80">좋아요(80)</option>
+            <option value="50">보통(50)</option>
+            <option value="20">슬퍼요(20)</option>
+        </select>
+        <button onclick="addData()">추가하기</button>
+    </div>
+    <canvas id="familyChart"></canvas>
+</div>
+
+<script>
+    const ctx = document.getElementById('familyChart').getContext('2d');
+    const labels = [];
+    const points = [];
+
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '가족 행복 점수',
+                data: points,
+                borderColor: '#ff922b',
+                backgroundColor: 'rgba(255, 146, 43, 0.2)',
+                fill: true,
+                tension: 0.3, // 선을 부드럽게
+                pointRadius: 5
+            }]
+        },
+        options: {
+            scales: { y: { min: 0, max: 100 } }
+        }
+    });
+
+    function addData() {
+        const year = document.getElementById('year').value;
+        const event = document.getElementById('event').value;
+        const score = document.getElementById('score').value;
+
+        if(!year || !event) return alert("내용을 입력해주세요!");
+
+        labels.push(year + "(" + event + ")");
+        points.push(score);
+        chart.update();
+
+        // 입력창 비우기
+        document.getElementById('year').value = '';
+        document.getElementById('event').value = '';
+    }
+</script>
+
+</body>
+</html>
